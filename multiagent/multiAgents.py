@@ -197,16 +197,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
 
         # Return action with highest score
-        # maxScore = float('-inf')
-        # nextAction = Directions.STOP
-        # for action in gameState.getLegalActions(0):
-        #     prevScore = maxScore
-        #     maxScore = max(maxScore,
-        #                    self.minimax(gameState, gameState.generateSuccessor(0, action), self.depth, 0, False))
-        #     if maxScore > prevScore:
-        #         nextAction = action
-        # return nextAction
-
         highestScore = float('-inf')
         # random initialize 
         import math
