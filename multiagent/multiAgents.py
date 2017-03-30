@@ -435,7 +435,18 @@ def betterEvaluationFunction(currentGameState):
       evaluation function (question 5).
 
       DESCRIPTION: <write something here so we know what you did>
+
+    This heuristic evaluation function focus on the following components
+    1. Survial fisrt 
+        Punish close to ghost
+    2. Food matters
+        Punish movement away from foods
+    3. Capsule matters
+        Better to get capsules
+    4. Kill weak ghost
+        Award killing ghost since the bonus
     """
+
     "*** YOUR CODE HERE ***"
     # successorGameState = currentGameState.generatePacmanSuccessor(action)
     if currentGameState.isWin():
@@ -447,7 +458,7 @@ def betterEvaluationFunction(currentGameState):
     Food = currentGameState.getFood()
     Capsules = currentGameState.getCapsules()
     GhostStates = currentGameState.getGhostStates()
-    # ScaredTimes := [0  1  1]
+    # ScaredTimes := [-1/0  1  1]
     # Ghost State = [Dead Al Alive]
     ScaredTimes = [not (ghostState.scaredTimer > 0)
                    for ghostState in GhostStates]
@@ -468,9 +479,9 @@ def betterEvaluationFunction(currentGameState):
     foodScore = 0
     ghostScore = 0
 
-    for food in Food.asList():
-        foodDist.append(util.manhattanDistance(food, Pos))
-    if len(foodDist) > 0:
+    if len(Food.asList()) > 0:
+        for food in Food.asList():
+            foodDist.append(util.manhattanDistance(food, Pos))
         foodScore = -average(foodDist)
 
     for capsule in Capsules:
@@ -482,16 +493,16 @@ def betterEvaluationFunction(currentGameState):
         for ghost in GhostStates:
             ghostDist.append(util.manhattanDistance(
                 ghost.getPosition(), Pos))
+        _mid = multiplyListByElement(
+            ghostDist, ScaredTimes, (lambda x: x[0] + x[1]))
+        _mid = filter((lambda x: x > 7), _mid)
+        if len(_mid) > 0:
+            ghostScore += sum(filter((lambda x: x == 1), _mid)) * -200
+            ghostScore += sum(filter((lambda x: x == 0), _mid)) * -99999
+            ghostScore += sum(filter((lambda x: x < 0), _mid)) * -200
 
-        if min(ghostDist) == 0:
-            return -99999
-        if min(ghostDist) == 1:
-            ghostScore = -100
-        else:
-            ghostScore = min(ghostDist)
-
-    maxBestScore = currentGameState.getScore() + foodScore + ghostScore +
-        capsuleScore * 10
+    maxBestScore = currentGameState.getScore() + foodScore + \
+        ghostScore + capsuleScore * 10
 
     return maxBestScore
 
