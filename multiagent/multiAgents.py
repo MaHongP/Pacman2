@@ -371,17 +371,20 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legalActions = gameState.getLegalActions(0)
         randIndex = int(math.floor(random.random() * (len(legalActions))))
         nextAction = legalActions[randIndex]
-
+        actionSet = []
         for action in gameState.getLegalActions(0):
             thisScore = self.expMin(
                 gameState,
                 gameState.generateSuccessor(0, action),
                 self.depth,
                 0)
+            actionSet.append((action, thisScore))
             if thisScore > highestScore:
                 highestScore = thisScore
                 nextAction = action
         # print highestScore
+        # print gameState.getPacmanPosition(), nextAction, actionSet
+        # print betterEvaluationFunction(gameState)
         return nextAction
 
     def expMax(self, gameState, state, depth, pacmanId):
@@ -460,9 +463,10 @@ def betterEvaluationFunction(currentGameState):
     GhostStates = currentGameState.getGhostStates()
     # ScaredTimes := [-1/0  1  1]
     # Ghost State = [Dead Al Alive]
-    ScaredTimes = [not (ghostState.scaredTimer > 0)
+    ScaredTimes = [not (ghostState.scaredTimer > 2)
                    for ghostState in GhostStates]
-
+    ScaredTimes2 = [ghostState.scaredTimer
+                    for ghostState in GhostStates]
     # Some useful functions:
     average = (lambda x: sum(x) / float(len(x)))
 
@@ -495,14 +499,18 @@ def betterEvaluationFunction(currentGameState):
                 ghost.getPosition(), Pos))
         _mid = multiplyListByElement(
             ghostDist, ScaredTimes, (lambda x: x[0] + x[1]))
-        _mid = filter((lambda x: x > 7), _mid)
-        if len(_mid) > 0:
-            ghostScore += sum(filter((lambda x: x == 1), _mid)) * -200
-            ghostScore += sum(filter((lambda x: x == 0), _mid)) * -99999
-            ghostScore += sum(filter((lambda x: x < 0), _mid)) * -200
+        ghostScore += sum(filter((lambda x: x == 1), _mid)) * -200
+        ghostScore += sum(filter((lambda x: x == 0), _mid)) * -99999
+        ghostScore += sum(filter((lambda x: x < 0), _mid)) * 200
+        # ghostScore += sum(filter((lambda x: x > 1), _mid))
+        # print _mid, ghostScore
 
     maxBestScore = currentGameState.getScore() + foodScore + \
         ghostScore + capsuleScore * 10
+
+    # print 'food score', 'ghost score', 'capsule score', 'final score'
+    # print foodScore, ' ' * 5, ghostScore, ' ' * 10, capsuleScore, ' ' * 5, maxBestScore
+    # print ScaredTimes2
 
     return maxBestScore
 
