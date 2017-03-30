@@ -288,7 +288,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
             if thisScore > beta:
                 return nextAction
             alpha = max(alpha, thisScore)
-        print highestScore
+        # print highestScore
         return nextAction
 
     def maxmizer(self, gameState, state, depth, pacmanId, alpha, beta):
@@ -364,7 +364,69 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        highestScore = float('-inf')
+        # random initialize
+        import math
+        legalActions = gameState.getLegalActions(0)
+        randIndex = int(math.floor(random.random() * (len(legalActions))))
+        nextAction = legalActions[randIndex]
+
+        for action in gameState.getLegalActions(0):
+            thisScore = self.expMin(
+                gameState,
+                gameState.generateSuccessor(0, action),
+                self.depth,
+                0)
+            if thisScore > highestScore:
+                highestScore = thisScore
+                nextAction = action
+        # print highestScore
+        return nextAction
+
+    def expMax(self, gameState, state, depth, pacmanId):
+        if depth == 0 or state.isWin() or state.isLose():
+            return self.evaluationFunction(state)
+
+        highestScore = float('-inf')
+        pacmanId = 0
+        for action in state.getLegalActions(pacmanId):
+            highestScore = max(
+                highestScore,
+                self.expMin(
+                    gameState,
+                    state.generateSuccessor(pacmanId, action),
+                    depth,
+                    pacmanId
+                ))
+        return highestScore
+
+    def expMin(self, gameState, state, depth, ghostId):
+        if depth == 0 or state.isWin() or state.isLose():
+            return self.evaluationFunction(state)
+
+        average = (lambda x: sum(x) / float(len(x)))
+        actionScore = []
+        ghostId += 1
+        for action in state.getLegalActions(ghostId):
+            if ghostId < (gameState.getNumAgents() - 1):
+                actionScore.append(
+                    self.expMin(
+                        gameState,
+                        state.generateSuccessor(ghostId, action),
+                        depth,
+                        ghostId
+                    ))
+
+            else:
+                actionScore.append(
+                    self.expMax(
+                        gameState,
+                        state.generateSuccessor(ghostId, action),
+                        (depth - 1),
+                        ghostId
+                    ))
+        return average(actionScore)
 
 
 def betterEvaluationFunction(currentGameState):
@@ -375,7 +437,64 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # successorGameState = currentGameState.generatePacmanSuccessor(action)
+    if currentGameState.isWin():
+        return float('inf')
+    if currentGameState.isLose():
+        return float('-inf')
+
+    Pos = currentGameState.getPacmanPosition()
+    Food = currentGameState.getFood()
+    Capsules = currentGameState.getCapsules()
+    GhostStates = currentGameState.getGhostStates()
+    # ScaredTimes := [0  1  1]
+    # Ghost State = [Dead Al Alive]
+    ScaredTimes = [not (ghostState.scaredTimer > 0)
+                   for ghostState in GhostStates]
+
+    # Some useful functions:
+    average = (lambda x: sum(x) / float(len(x)))
+
+    trueFalse2PosNeg = (lambda x: map((lambda x: 1 if x == True else -1)))
+    multiplyListByElement = (lambda x, y, fun: map(fun, zip(x, y)))
+    evalOnList = (lambda fun, li: 0 if not len(
+        li) > 0 else fun(li) / float(len(li)))
+
+    # Score = NextState.Score + Sum(FoodDistance) - GhostDistance
+    foodDist = []
+    capsuleDist = []
+    ghostDist = []
+    capsuleScore = 0
+    foodScore = 0
+    ghostScore = 0
+
+    for food in Food.asList():
+        foodDist.append(util.manhattanDistance(food, Pos))
+    if len(foodDist) > 0:
+        foodScore = -average(foodDist)
+
+    for capsule in Capsules:
+        capsuleDist.append(util.manhattanDistance(capsule, Pos))
+    if len(capsuleDist) > 0:
+        capsuleScore = -sum(capsuleDist)
+
+    if(len(GhostStates) > 0):
+        for ghost in GhostStates:
+            ghostDist.append(util.manhattanDistance(
+                ghost.getPosition(), Pos))
+
+        if min(ghostDist) == 0:
+            return -99999
+        if min(ghostDist) == 1:
+            ghostScore = -100
+        else:
+            ghostScore = min(ghostDist)
+
+    maxBestScore = currentGameState.getScore() + foodScore + ghostScore +
+        capsuleScore * 10
+
+    return maxBestScore
+
 
 # Abbreviation
 better = betterEvaluationFunction
