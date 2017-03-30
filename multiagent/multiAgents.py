@@ -197,43 +197,72 @@ class MinimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
 
         # Return action with highest score
+        # maxScore = float('-inf')
+        # nextAction = Directions.STOP
+        # for action in gameState.getLegalActions(0):
+        #     prevScore = maxScore
+        #     maxScore = max(maxScore,
+        #                    self.minimax(gameState, gameState.generateSuccessor(0, action), self.depth, 0, False))
+        #     if maxScore > prevScore:
+        #         nextAction = action
+        # return nextAction
 
-        maxScore = float('-inf')
+        highestScore = float('-inf')
+        # random initialize 
         import math
         legalActions = gameState.getLegalActions(0)
         randIndex = int(math.floor(random.random() * (len(legalActions))))
-
         nextAction = legalActions[randIndex]
+
         for action in gameState.getLegalActions(0):
-            prevScore = maxScore
-            maxScore = max(maxScore,
-                           self.minimax(gameState, gameState.generateSuccessor(0, action), self.depth, 0, False))
-            if maxScore > prevScore:
+            thisScore = self.minimizer(gameState, gameState.generateSuccessor(
+                0, action), self.depth, 0)
+            if thisScore > highestScore:
+                highestScore = thisScore
                 nextAction = action
+        print highestScore
         return nextAction
 
-    def minimax(self, gameState, state, depth, numGhost, isMaxmizer):
+    def maxmizer(self, gameState, state, depth, pacmanId):
         if depth == 0 or state.isWin() or state.isLose():
             return self.evaluationFunction(state)
+        highestScore = float('-inf')
+        pacmanId = 0
+        for action in state.getLegalActions(pacmanId):
+            highestScore = max(
+                highestScore,
+                self.minimizer(
+                    gameState,
+                    state.generateSuccessor(pacmanId, action),
+                    depth,
+                    pacmanId))
+        return highestScore
 
-        if isMaxmizer:
-            v = float('-inf')
-            for action in state.getLegalActions(0):
-                v = max(v, self.minimax(
-                    gameState, state.generateSuccessor(0, action), depth, 0, False))
-            return v
-
-        else:
-            v = float('inf')
-            numGhost += 1
-            for action in state.getLegalActions(numGhost):
-                if numGhost < (gameState.getNumAgents() - 1):
-                    v = min(v,
-                            self.minimax(gameState, state.generateSuccessor(numGhost, action), depth, numGhost, False))
-                else:
-                    v = min(v, self.minimax(gameState, state.generateSuccessor(numGhost, action), (depth - 1), numGhost,
-                                            True))
-            return v
+    def minimizer(self, gameState, state, depth, ghostId):
+        if depth == 0 or state.isWin() or state.isLose():
+            return self.evaluationFunction(state)
+        lowestScore = float('inf')
+        ghostId += 1
+        for action in state.getLegalActions(ghostId):
+            if ghostId < (gameState.getNumAgents() - 1):
+                lowestScore = min(
+                    lowestScore,
+                    self.minimizer(
+                        gameState,
+                        state.generateSuccessor(ghostId, action),
+                        depth,
+                        ghostId
+                    ))
+            else:
+                lowestScore = min(
+                    lowestScore,
+                    self.maxmizer(
+                        gameState,
+                        state.generateSuccessor(ghostId, action),
+                        (depth - 1),
+                        ghostId
+                    ))
+        return lowestScore
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
