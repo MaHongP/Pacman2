@@ -372,6 +372,11 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         randIndex = int(math.floor(random.random() * (len(legalActions))))
         nextAction = legalActions[randIndex]
         actionSet = []
+
+        # print '====>>>' * 7
+        # print nextAction, gameState.getLegalActions(0)
+        # print '====<<<' * 7
+
         for action in gameState.getLegalActions(0):
             thisScore = self.expMin(
                 gameState,
@@ -382,9 +387,60 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
             if thisScore > highestScore:
                 highestScore = thisScore
                 nextAction = action
-        # print highestScore
-        # print gameState.getPacmanPosition(), nextAction, actionSet
-        # print betterEvaluationFunction(gameState)
+        choiceSet = filter((lambda x: x[1] == highestScore), actionSet)
+        randIndex = int(math.floor(random.random() * (len(choiceSet))))
+        nextAction = choiceSet[randIndex][0]
+
+        # # print highestScore
+        # print '---->>>' * 7
+        # print gameState.getPacmanPosition()
+        # print nextAction, nextAction, actionSet, choiceSet
+        # print '----<<<' * 7
+        # average = (lambda x: sum(x) / float(len(x)))
+        # testPosFood = (lambda y: (lambda x: util.manhattanDistance(
+        #     y, x)))
+        # foodScoreFun = (lambda x, y: sum(
+        #     map(
+        #         testPosFood(x),
+        #         y
+        #     ))
+        #     #     + min(
+        #     #         map(
+        #     #             testPosFood(x),
+        #     #             y)
+        #     # )
+        # )
+        # addDirection = (lambda x, y: (x[0] + y[0], x[1] + y[1]))
+        # print gameState.getPacmanPosition(), addDirection(gameState.getPacmanPosition(), (0, 1))
+        # print 'Stay here, food score: ', foodScoreFun(
+        #     gameState.getPacmanPosition(),
+        #     gameState.getFood().asList()
+        # )
+        # print map(testPosFood(gameState.getPacmanPosition()), gameState.getFood().asList())
+        # print average(map(testPosFood(gameState.getPacmanPosition()), gameState.getFood().asList()))
+        # print 'Up here, food score: ', foodScoreFun(
+        #     addDirection(gameState.getPacmanPosition(), (0, 1)),
+        #     gameState.getFood().asList()
+        # )
+        # print map(testPosFood(addDirection(gameState.getPacmanPosition(), (0, 1))), gameState.getFood().asList())
+        # print average(map(testPosFood(addDirection(gameState.getPacmanPosition(), (0, 1))), gameState.getFood().asList()))
+        # print 'Down here, food score: ', foodScoreFun(
+        #     addDirection(gameState.getPacmanPosition(), (0, -1)),
+        #     gameState.getFood().asList()
+        # )
+        # print map(testPosFood(addDirection(gameState.getPacmanPosition(), (0, -1))), gameState.getFood().asList())
+        # print average(map(testPosFood(addDirection(gameState.getPacmanPosition(), (0, -1))), gameState.getFood().asList()))
+        # print 'Left here, food score: ', foodScoreFun(
+        #     addDirection(gameState.getPacmanPosition(), (1, 0)),
+        #     gameState.getFood().asList()
+        # )
+        # print 'Right here, food score: ', foodScoreFun(
+        #     addDirection(gameState.getPacmanPosition(), (-1, 0)),
+        #     gameState.getFood().asList()
+        # )
+        # print 'Final choice', nextAction
+        # print '----<<<' * 7
+        # # print betterEvaluationFunction(gameState)
         return nextAction
 
     def expMax(self, gameState, state, depth, pacmanId):
@@ -509,7 +565,8 @@ def betterEvaluationFunction(currentGameState):
         ghostScore + capsuleScore * 10
 
     # print 'food score', 'ghost score', 'capsule score', 'final score'
-    # print foodScore, ' ' * 5, ghostScore, ' ' * 10, capsuleScore, ' ' * 5, maxBestScore
+    # print foodScore, ' ' * 5, ghostScore, ' ' * 7, capsuleScore, ' ' * 5, maxBestScore
+    # print Capsules, capsuleDist, len(capsuleDist), sum(capsuleDist)
     # print ScaredTimes2
 
     return maxBestScore
